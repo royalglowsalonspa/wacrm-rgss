@@ -56,8 +56,8 @@
 │  └─────────────────────────┘                                │
 │                                                              │
 │  ┌─────────────────────────┐                                │
-│  │   Your Domain (optional)│                                │
-│  │   crm.royalglowsalon.com                                │
+│  │   Your Domain           │                                │
+│  │   wacrm-rgss.store      │                                │
 │  └─────────────────────────┘                                │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -255,8 +255,8 @@ The migration already enables realtime for `messages` and `conversations` tables
 ### 3.5 Configure Auth
 
 1. Go to **Authentication → URL Configuration**
-2. Set **Site URL** to `https://crm.yourdomain.com` (or your VPS IP temporarily)
-3. Set **Redirect URLs** to `https://crm.yourdomain.com/**`
+2. Set **Site URL** to `https://wacrm-rgss.store`
+3. Set **Redirect URLs** to `https://wacrm-rgss.store/**`
 
 ---
 
@@ -293,7 +293,7 @@ ENCRYPTION_KEY=<see below>
 META_APP_SECRET=your-meta-app-secret
 
 # === RECOMMENDED ===
-NEXT_PUBLIC_SITE_URL=https://crm.yourdomain.com
+NEXT_PUBLIC_SITE_URL=https://wacrm-rgss.store
 
 # === OPTIONAL (required for automation Wait steps) ===
 AUTOMATION_CRON_SECRET=<see below>
@@ -312,7 +312,7 @@ openssl rand -hex 32
 ### 4.4 Configure Domain in Coolify
 
 1. Go to your app → **Settings → Domains**
-2. Add your domain: `crm.yourdomain.com`
+2. Add your domain: `wacrm-rgss.store`
 3. Coolify will auto-provision a Let's Encrypt SSL certificate
 4. If no custom domain yet, use the VPS IP with port: `http://<vps-ip>:3000`
 
@@ -327,7 +327,7 @@ In Coolify → your app → **Settings → General**:
 
 ### 4.7 Verify Deployment
 
-Open `https://crm.yourdomain.com` — you should see the login page.
+Open `https://wacrm-rgss.store` — you should see the login page.
 
 ---
 
@@ -364,7 +364,7 @@ The test token expires in 24h. For production:
 ### 5.4 Configure Webhook in Meta Dashboard
 
 1. In Meta Developer Dashboard → WhatsApp → Configuration
-2. Set **Callback URL** to: `https://crm.yourdomain.com/api/whatsapp/webhook`
+2. Set **Callback URL** to: `https://wacrm-rgss.store/api/whatsapp/webhook`
 3. Set **Verify Token** to any string you choose (you'll save this in the CRM settings)
 4. Subscribe to webhook fields: `messages`
 
@@ -394,14 +394,14 @@ SSH into your VPS and create a cron file:
 sudo nano /etc/cron.d/wacrm-crons
 ```
 
-Paste (replace `YOUR_CRON_SECRET` and `YOUR_DOMAIN`):
+Paste (replace `YOUR_CRON_SECRET`):
 
 ```cron
 # wacrm automation cron - every 2 minutes
-*/2 * * * * root curl -sf -H "x-cron-secret: YOUR_CRON_SECRET" https://YOUR_DOMAIN/api/automations/cron > /dev/null 2>&1
+*/2 * * * * root curl -sf -H "x-cron-secret: YOUR_CRON_SECRET" https://wacrm-rgss.store/api/automations/cron > /dev/null 2>&1
 
 # wacrm flows cron - every 5 minutes
-*/5 * * * * root curl -sf -H "x-cron-secret: YOUR_CRON_SECRET" https://YOUR_DOMAIN/api/flows/cron > /dev/null 2>&1
+*/5 * * * * root curl -sf -H "x-cron-secret: YOUR_CRON_SECRET" https://wacrm-rgss.store/api/flows/cron > /dev/null 2>&1
 ```
 
 Set permissions:
@@ -413,10 +413,10 @@ sudo chmod 644 /etc/cron.d/wacrm-crons
 
 ```bash
 # Test manually
-curl -s -H "x-cron-secret: YOUR_CRON_SECRET" https://YOUR_DOMAIN/api/automations/cron
+curl -s -H "x-cron-secret: YOUR_CRON_SECRET" https://wacrm-rgss.store/api/automations/cron
 # Expected: {"processed":0}
 
-curl -s -H "x-cron-secret: YOUR_CRON_SECRET" https://YOUR_DOMAIN/api/flows/cron
+curl -s -H "x-cron-secret: YOUR_CRON_SECRET" https://wacrm-rgss.store/api/flows/cron
 # Expected: {"swept":0}
 ```
 
@@ -472,7 +472,7 @@ Run through this checklist after deployment:
 
 - [ ] **Uptime** — VPS stays running after SSH disconnect
 - [ ] **Auto-deploy** — Push a commit to `main`, verify Coolify rebuilds
-- [ ] **SSL valid** — `https://crm.yourdomain.com` shows padlock in browser
+- [ ] **SSL valid** — `https://wacrm-rgss.store` shows padlock in browser
 - [ ] **Cron working** — `grep wacrm /var/log/syslog` shows executions
 - [ ] **Webhook health** — Meta dashboard shows successful deliveries (green)
 
@@ -534,7 +534,7 @@ grep cron /var/log/syslog | tail -20
 | Webhook returns 401 | Wrong Meta App Secret | Verify `META_APP_SECRET` env var matches your app's App Secret exactly |
 | Messages not appearing in real-time | Supabase realtime not enabled | Check Database → Replication — `messages` and `conversations` must be enabled |
 | Cron returns `{"error":"cron not configured"}` | Missing env var | Add `AUTOMATION_CRON_SECRET` in Coolify environment variables and redeploy |
-| SSL cert not issuing | DNS not propagated yet | Wait 5-10 min, verify A record points to VPS IP with `dig crm.yourdomain.com` |
+| SSL cert not issuing | DNS not propagated yet | Wait 5-10 min, verify A record points to VPS IP with `dig wacrm-rgss.store` |
 | App shows 502 Bad Gateway | Container crashed or still starting | Check Coolify logs, wait for build to finish, or restart the app |
 | Rate limiting not working | Multiple container replicas | Ensure Coolify runs only 1 instance (default setting) |
 | "Out of capacity" on Oracle | High demand in your region | Try again later, or try a different availability domain |
@@ -559,7 +559,7 @@ free -h
 sudo systemctl restart coolify
 
 # Test webhook endpoint manually
-curl -X GET "https://YOUR_DOMAIN/api/whatsapp/webhook?hub.mode=subscribe&hub.challenge=test123&hub.verify_token=YOUR_VERIFY_TOKEN"
+curl -X GET "https://wacrm-rgss.store/api/whatsapp/webhook?hub.mode=subscribe&hub.challenge=test123&hub.verify_token=YOUR_VERIFY_TOKEN"
 ```
 
 ---

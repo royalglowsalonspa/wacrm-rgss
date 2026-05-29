@@ -162,10 +162,13 @@ ENCRYPTION_KEY=your-64-char-hex-key
 META_APP_SECRET=your-meta-app-secret
 
 # Site URL
-NEXT_PUBLIC_SITE_URL=https://crm.yourdomain.com
+NEXT_PUBLIC_SITE_URL=https://wacrm-rgss.store
 
 # Cron endpoint protection
 AUTOMATION_CRON_SECRET=your-cron-secret
+
+# === PRODUCTION DOMAIN ===
+# Domain: wacrm-rgss.store
 ```
 
 ---

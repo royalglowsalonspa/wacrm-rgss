@@ -91,10 +91,10 @@ This plan breaks the full deployment into **3 phases across 3 weeks**:
 | 4.1 | Generate ENCRYPTION_KEY: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` | 1 min | [ ] |
 | 4.2 | Generate AUTOMATION_CRON_SECRET: `openssl rand -hex 32` | 1 min | [ ] |
 | 4.3 | Save both secrets in a password manager (1Password, Bitwarden, etc.) | 2 min | [ ] |
-| 4.4 | **Option A:** Buy a domain (~$10/year from Cloudflare/Namecheap) | 10 min | [ ] |
-| 4.5 | **Option B:** Get a free subdomain from [duckdns.org](https://duckdns.org) | 5 min | [ ] |
-| 4.6 | Add DNS A record pointing to your Oracle VPS IP | 5 min | [ ] |
-| 4.7 | Verify DNS propagation: `dig crm.yourdomain.com` (wait up to 10 min) | 10 min | [ ] |
+| 4.4 | ~~Buy a domain~~ ✅ **DONE** — `wacrm-rgss.store` purchased | — | [x] |
+| 4.5 | Add DNS **A record**: `@` → your Oracle VPS Public IP | 5 min | [ ] |
+| 4.6 | Add DNS **A record**: `www` → your Oracle VPS Public IP (optional) | 2 min | [ ] |
+| 4.7 | Verify DNS propagation: `dig wacrm-rgss.store` (wait up to 10 min) | 10 min | [ ] |
 
 **Checkpoint:** Domain resolves to your VPS IP, secrets generated and saved ✅
 
@@ -114,7 +114,7 @@ This plan breaks the full deployment into **3 phases across 3 weeks**:
 | 5.6 | Add environment variables (all 7 — see below) | 5 min | [ ] |
 | 5.7 | Set domain in Coolify → Settings → Domains | 2 min | [ ] |
 | 5.8 | Click **Deploy** and wait for build (~3-5 min) | 5 min | [ ] |
-| 5.9 | Verify: open `https://crm.yourdomain.com` → login page appears | 2 min | [ ] |
+| 5.9 | Verify: open `https://wacrm-rgss.store` → login page appears | 2 min | [ ] |
 | 5.10 | Enable **Auto Deploy** in Settings → General | 1 min | [ ] |
 
 **Environment variables to add in step 5.6:**
@@ -124,7 +124,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY = (from step 3.20)
 SUPABASE_SERVICE_ROLE_KEY = (from step 3.20)
 ENCRYPTION_KEY = (from step 4.1)
 META_APP_SECRET = (from step 6.4 — add later)
-NEXT_PUBLIC_SITE_URL = https://crm.yourdomain.com
+NEXT_PUBLIC_SITE_URL = https://wacrm-rgss.store
 AUTOMATION_CRON_SECRET = (from step 4.2)
 ```
 
@@ -160,7 +160,7 @@ AUTOMATION_CRON_SECRET = (from step 4.2)
 | 6.7 | Create System User → name: `wacrm-api` → role: Admin | 3 min | [ ] |
 | 6.8 | Generate Token → select your app → permissions: `whatsapp_business_management`, `whatsapp_business_messaging` | 3 min | [ ] |
 | 6.9 | Copy the permanent access token (save in password manager) | 2 min | [ ] |
-| 6.10 | In Meta Dashboard → WhatsApp → Configuration → set Callback URL: `https://crm.yourdomain.com/api/whatsapp/webhook` | 3 min | [ ] |
+| 6.10 | In Meta Dashboard → WhatsApp → Configuration → set Callback URL: `https://wacrm-rgss.store/api/whatsapp/webhook` | 3 min | [ ] |
 | 6.11 | Set Verify Token to a random string (e.g., `rgss-verify-2026`) — remember it | 2 min | [ ] |
 | 6.12 | Click **Verify and Save** — should succeed | 1 min | [ ] |
 | 6.13 | Subscribe to webhook field: `messages` | 1 min | [ ] |
@@ -182,17 +182,17 @@ AUTOMATION_CRON_SECRET = (from step 4.2)
 | 7.2 | Create cron file: `sudo nano /etc/cron.d/wacrm-crons` | 1 min | [ ] |
 | 7.3 | Paste cron config (see below) | 2 min | [ ] |
 | 7.4 | Save and set permissions: `sudo chmod 644 /etc/cron.d/wacrm-crons` | 1 min | [ ] |
-| 7.5 | Test automation cron: `curl -s -H "x-cron-secret: YOUR_SECRET" https://crm.yourdomain.com/api/automations/cron` | 1 min | [ ] |
-| 7.6 | Test flows cron: `curl -s -H "x-cron-secret: YOUR_SECRET" https://crm.yourdomain.com/api/flows/cron` | 1 min | [ ] |
+| 7.5 | Test automation cron: `curl -s -H "x-cron-secret: YOUR_SECRET" https://wacrm-rgss.store/api/automations/cron` | 1 min | [ ] |
+| 7.6 | Test flows cron: `curl -s -H "x-cron-secret: YOUR_SECRET" https://wacrm-rgss.store/api/flows/cron` | 1 min | [ ] |
 | 7.7 | Verify both return `{"processed":0}` or `{"swept":0}` | 1 min | [ ] |
 
 **Cron file content for step 7.3:**
 ```cron
 # wacrm-rgss automation wait-step processor (every 2 min)
-*/2 * * * * root curl -sf -H "x-cron-secret: YOUR_AUTOMATION_CRON_SECRET" https://crm.yourdomain.com/api/automations/cron > /dev/null 2>&1
+*/2 * * * * root curl -sf -H "x-cron-secret: YOUR_AUTOMATION_CRON_SECRET" https://wacrm-rgss.store/api/automations/cron > /dev/null 2>&1
 
 # wacrm-rgss flow timeout sweep (every 5 min)
-*/5 * * * * root curl -sf -H "x-cron-secret: YOUR_AUTOMATION_CRON_SECRET" https://crm.yourdomain.com/api/flows/cron > /dev/null 2>&1
+*/5 * * * * root curl -sf -H "x-cron-secret: YOUR_AUTOMATION_CRON_SECRET" https://wacrm-rgss.store/api/flows/cron > /dev/null 2>&1
 ```
 
 **Checkpoint:** Cron jobs running, automation Wait steps will process every 2 minutes ✅
@@ -210,8 +210,8 @@ AUTOMATION_CRON_SECRET = (from step 4.2)
 | 8.3 | Restart SSH: `sudo systemctl restart sshd` | 1 min | [ ] |
 | 8.4 | Set server timezone: `sudo timedatectl set-timezone Asia/Manila` (or your timezone) | 1 min | [ ] |
 | 8.5 | Enable auto-updates: `sudo apt install unattended-upgrades -y` | 2 min | [ ] |
-| 8.6 | Configure Supabase Auth → URL Configuration → set Site URL and Redirect URLs | 3 min | [ ] |
-| 8.7 | Sign up for [UptimeRobot](https://uptimerobot.com) (free) → add monitor for your CRM URL | 5 min | [ ] |
+| 8.6 | Configure Supabase Auth → URL Configuration → Site URL: `https://wacrm-rgss.store`, Redirect URLs: `https://wacrm-rgss.store/**` | 3 min | [ ] |
+| 8.7 | Sign up for [UptimeRobot](https://uptimerobot.com) (free) → add monitor for `https://wacrm-rgss.store` | 5 min | [ ] |
 
 **Checkpoint:** Server hardened, monitoring active ✅
 
@@ -357,7 +357,7 @@ Save these in a password manager:
 | WhatsApp Phone Number ID | Meta Dashboard → WhatsApp → API Setup | API calls |
 | WhatsApp Access Token | System User → Generate Token | API calls |
 | Verify Token | You choose (any string) | Webhook setup |
-| Domain registrar login | Cloudflare/Namecheap/DuckDNS | DNS management |
+| Domain registrar login | Your registrar (for `wacrm-rgss.store`) | DNS management |
 | CRM Manager account | You create in the app | Daily use |
 | CRM Receptionist account | You create in the app | Daily use |
 
@@ -380,7 +380,7 @@ Save these in a password manager:
 
 | Decision | Options | Recommendation |
 |----------|---------|----------------|
-| **Domain** | A) Buy custom domain (~$10/yr) <br> B) Free DuckDNS subdomain | **A** — looks professional for customers |
+| **Domain** | ~~A) Buy custom domain~~ <br> ~~B) Free DuckDNS subdomain~~ | ✅ **DECIDED** — `wacrm-rgss.store` |
 | **VPS region** | Singapore, Mumbai, Tokyo, Frankfurt, etc. | **Closest to your customers** |
 | **Supabase region** | Same options | **Same as VPS region** |
 | **Server timezone** | Your local timezone | **Your salon's operating timezone** |
@@ -393,7 +393,7 @@ Save these in a password manager:
 ### Right Now (Today):
 1. **Sign up for Oracle Cloud** — [cloud.oracle.com/free](https://cloud.oracle.com/free)
 2. **Sign up for Supabase** — [supabase.com](https://supabase.com)
-3. **Decide on domain** — buy one or use DuckDNS
+3. ~~Decide on domain~~ ✅ **DONE** — `wacrm-rgss.store` purchased
 
 ### This Week:
 4. Follow **Phase 1** (Day 1-5) step by step
